@@ -5,17 +5,15 @@ import mainargs._
 
 object Main:
 
-  /*
-  def main(args: Array[String]): Unit =
-    val echos = Seq(new impl.SimpleEcho, new impl.DoubleEcho)
-    for e <- echos do
-      println(e.echo("hello"))
-  **/
-  
-  def topWords(
-    cloudSize: Int = 20
-    lengthAtLeast: Int = 6
-    windowSize: Int = 1000
+  @main def wordCloudDemo(): Unit =
+    // Create an observer that prints word cloud updates
+    val observer = new StatsObserver
+     
 
+  val engine = new TopWordsEngine(
+    howMany = 10, //Top x words over all
+    minLength = 4, //Track only words with 4 or more letters
+    windowSize = 100, //Track last x words
+    observer = observer
   )
 end Main
