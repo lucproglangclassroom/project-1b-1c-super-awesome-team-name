@@ -1,3 +1,5 @@
+package edu.luc.cs.cs371.echo.main
+
 import scala.collection.mutable
 /*
   Maintains a moving window of recent words and tracks 
@@ -23,7 +25,8 @@ class TopWordsEngine(
         freq(old) -= 1
         if freq(old) == 0 then freq.remove(old)
 
-      if window.size == windowSize then
+      // Update observer after every word once window is full
+      if window.size >= windowSize then
         val top =
           freq.toList
             .sortBy { case (_, c) => -c }
