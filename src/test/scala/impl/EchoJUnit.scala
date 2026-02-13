@@ -1,5 +1,6 @@
-package edu.luc.cs.cs371.echo
 package impl
+import main._
+import impl._
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*

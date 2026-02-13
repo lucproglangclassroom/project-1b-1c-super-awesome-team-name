@@ -1,5 +1,7 @@
-package edu.luc.cs.cs371.echo.impl
+package impl
 
+import main._
+import impl._
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 
