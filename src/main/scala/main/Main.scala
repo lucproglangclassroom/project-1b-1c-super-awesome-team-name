@@ -1,56 +1,49 @@
-package main
+package edu.luc.cs.cs371.echo
 
-import mainargs.*
-
-import scala.language.unsafeNulls
+import com.typesafe.scalalogging.Logger
+import edu.luc.cs.cs371.echo.main.ConsoleObserver
+import edu.luc.cs.cs371.echo.main.TopWordsEngine
 
 object Main:
 
+  private val logger = Logger(this.getClass)
 
-    System.err.println("Starting process")
+  /** 
+   * Entry point for processing top words from stdin.
+   *
+   * @param cloudSize Number of words to show in the word cloud
+   * @param lengthAtLeast Minimum length of a word to be considered
+   * @param windowSize Size of moving window of recent words
+   */
+  @main def topwords(
+      cloudSize: Int = 10,
+      lengthAtLeast: Int = 6,
+      windowSize: Int = 1000
+  ): Unit =
+    // Log the parameters
+    logger.debug(
+      s"howMany=$cloudSize minLength=$lengthAtLeast windowSize=$windowSize"
+    )
+
     // Create an observer that prints word cloud updates
-    @main def run(
-                   @arg(name = "cloud-size", short = 'c', doc = "size of the word cloud (number of words to show)")
-                   cloudSize: Int = 10,
+    val observer = new ConsoleObserver
 
-                   @arg(name = "length-at-least", short = 'l', doc = "minimum length of a word to be considered")
-                   lengthAtLeast: Int = 5,
+    // Create the TopWordsEngine
+    val engine = new TopWordsEngine(
+      howMany = cloudSize,
+      minLength = lengthAtLeast,
+      windowSize = windowSize,
+      observer = observer
+    )
 
-                   @arg(name = "window-size", short = 'w', doc = "size of moving window of recent words")
-                   windowSize: Int = 1000,
+    // Read words from stdin
+    val words = scala.io.Source.stdin.getLines()
+      .flatMap(_.split("(?U)[^\\p{Alpha}0-9']+").nn)
 
-                   @arg(name = "input-file", short = 'i', doc = "path to input text file")
-                   inputFile: String = ""
-                 ): Unit =
-
-      val observer = new ConsoleObserver
-      val engine = new TopWordsEngine(
-        howMany = cloudSize,
-        minLength = lengthAtLeast,
-        windowSize = windowSize,
-        observer = observer
-      )
-
-
-      if inputFile.nonEmpty then
-        // Read from file
-        val source = scala.io.Source.fromFile(inputFile)
-        try
-          source.getLines().flatMap(_.split("\\W+"))
-            .foreach(word => engine.process(word.toLowerCase))
-        finally
-          source.close()
-      else
-        // Read from stdin
-        println("Enter text (Ctrl+D to end):")
-        scala.io.Source.stdin.getLines()
-          .flatMap(_.split("\\W+"))
-          .foreach(word => engine.process(word.toLowerCase))
-
-
-  // External entry point into Scala application
-    def main(args: Array[String]): Unit =
-      ParserForMethods(this).runOrExit(args.toIndexedSeq)
-      ()
-
-end Main
+    // Process each word
+    try
+      for word <- words do engine.process(word)
+    catch
+      case _: java.io.IOException => 
+        // Handle EOF gracefully
+        sys.exit(0)
