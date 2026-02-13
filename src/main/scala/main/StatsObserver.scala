@@ -10,10 +10,15 @@ case class WordStats(topWords: List[(String, Int)])
  * Trait for observing updates to word statistics.
  * Implementations can display, log, or process these statistics in various ways.
  */
-trait StatsObserver:
+trait Observer:
   /**
    * Called when new word statistics are available.
    * @param stats The current word statistics
    */
   def update(stats: WordStats): Unit
-end StatsObserver
+end Observer
+
+/**
+ * Alias for backward compatibility
+ */
+type StatsObserver = Observer

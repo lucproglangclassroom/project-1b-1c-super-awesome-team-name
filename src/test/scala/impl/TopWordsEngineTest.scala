@@ -1,7 +1,8 @@
 package edu.luc.cs.cs371.echo.impl
 
 import org.scalatest.funsuite.AnyFunSuite
-import scala.language.unsafeNulls
+import edu.luc.cs.cs371.echo.main.{TopWordsEngine, Observer, WordStats}
+import scala.collection.mutable.ListBuffer
 
 class TopWordsEngineTest extends AnyFunSuite:
 
@@ -10,7 +11,7 @@ class TopWordsEngineTest extends AnyFunSuite:
       .fromResource(file)
       .getLines
       .flatMap(_.split("(?U)[^\\p{Alpha}0-9']+").nn)
-
+  
   test("window fills and emits") {
     val obs = new TestObserver
     val engine = new TopWordsEngine(5, 3, 20, obs)
@@ -57,3 +58,10 @@ class TopWordsEngineTest extends AnyFunSuite:
     assert(!allWords.contains("fun"))
     assert(!allWords.contains("test"))
   }
+/**
+ * Test observer that collects all stats updates
+ */
+class TestObserver extends Observer:
+  val seen = ListBuffer[WordStats]()
+  def update(stats: WordStats): Unit = seen += stats
+end TestObserver
