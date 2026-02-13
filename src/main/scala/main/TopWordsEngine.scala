@@ -1,4 +1,4 @@
-package edu.luc.cs.cs371.echo.main
+package main
 
 import scala.collection.mutable
 /*
@@ -16,14 +16,16 @@ class TopWordsEngine(
   private val freq = mutable.Map[String, Int]()
 
   def process(word: String): Unit =
+    
     if word.length >= minLength then
       window.enqueue(word)
       freq(word) = freq.getOrElse(word, 0) + 1
+      
 
       if window.size > windowSize then
         val old = window.dequeue()
         freq(old) -= 1
-        if freq(old) == 0 then freq.remove(old)
+        if freq(old) == 0 then freq.remove(old) : Unit
 
       // Update observer after every word once window is full
       if window.size >= windowSize then
@@ -32,3 +34,4 @@ class TopWordsEngine(
             .sortBy { case (_, c) => -c }
             .take(howMany)
         observer.update(WordStats(top))
+

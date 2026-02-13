@@ -1,67 +1,131 @@
-package edu.luc.cs.cs371.echo.impl
+package impl
 
+import main._
 import org.scalatest.funsuite.AnyFunSuite
-import edu.luc.cs.cs371.echo.main.{TopWordsEngine, Observer, WordStats}
-import scala.collection.mutable.ListBuffer
 
 class TopWordsEngineTest extends AnyFunSuite:
 
-  def loadWords(file: String): Iterator[String] =
-    scala.io.Source
-      .fromResource(file)
-      .getLines
-      .flatMap(_.split("(?U)[^\\p{Alpha}0-9']+").nn)
-  
-  test("window fills and emits") {
-    val obs = new TestObserver
-    val engine = new TopWordsEngine(5, 3, 20, obs)
+  // Test observer that captures updates
+  class TestObserver extends StatsObserver:
+    var updates: List[WordStats] = List()
+    var updateCount: Int = 0
 
-    loadWords("sample.txt").take(50).foreach(engine.process)
+    def update(stats: WordStats): Unit =
+      updates = stats :: updates
+      updateCount += 1
 
-    assert(obs.seen.nonEmpty)
-  }
+    def lastUpdate: Option[WordStats] = updates.headOption
+    def allUpdates: List[WordStats] = updates.reverse
 
-  test("programming and scala dominate") {
-    val obs = new TestObserver
-    val engine = new TopWordsEngine(3, 4, 50, obs)
+  test("ignores words shorter than minLength"):
+    val observer = new TestObserver
+    val engine = new TopWordsEngine(
+      howMany = 5,
+      minLength = 4,
+      windowSize = 3,
+      observer = observer
+    )
 
-    loadWords("sample.txt").foreach(engine.process)
+    engine.process("the")    // too short
+    engine.process("and")    // too short
+    engine.process("hello")  // valid
+    engine.process("world")  // valid
+    engine.process("test")   // valid - window now full
 
-    val last = obs.seen.last.topWords.map(_._1)
+    assert(observer.updateCount == 1)
+    val topWords = observer.lastUpdate.get.topWords.map(_._1)
+    assert(topWords.contains("hello"))
+    assert(topWords.contains("world"))
+    assert(topWords.contains("test"))
+    assert(!topWords.contains("the"))
 
-    assert(last.contains("programming"))
-    assert(last.contains("scala"))
-  }
+  test("maintains sliding window of specified size"):
+    val observer = new TestObserver
+    val engine = new TopWordsEngine(
+      howMany = 10,
+      minLength = 1,
+      windowSize = 3,
+      observer = observer
+    )
 
-  test("frequencies never exceed window") {
-    val obs = new TestObserver
-    val engine = new TopWordsEngine(10, 3, 30, obs)
+    engine.process("one")
+    engine.process("two")
+    engine.process("three")
 
-    loadWords("sample.txt").take(200).foreach(engine.process)
+    assert(observer.updateCount == 1)
 
-    obs.seen.foreach { stats =>
-      stats.topWords.foreach { case (_, f) =>
-        assert(f <= 30)
-      }
-    }
-  }
+    engine.process("four")  // "one" slides out
 
-  test("short words ignored") {
-    val obs = new TestObserver
-    val engine = new TopWordsEngine(5, 6, 20, obs)
+    val words = observer.lastUpdate.get.topWords.map(_._1)
+    assert(!words.contains("one"))
+    assert(words.contains("four"))
 
-    loadWords("sample.txt").foreach(engine.process)
+  test("tracks word frequencies correctly"):
+    val observer = new TestObserver
+    val engine = new TopWordsEngine(
+      howMany = 10,
+      minLength = 1,
+      windowSize = 5,
+      observer = observer
+    )
 
-    val allWords =
-      obs.seen.flatMap(_.topWords.map(_._1)).toSet
+    engine.process("apple")
+    engine.process("banana")
+    engine.process("apple")
+    engine.process("cherry")
+    engine.process("apple")
 
-    assert(!allWords.contains("fun"))
-    assert(!allWords.contains("test"))
-  }
-/**
- * Test observer that collects all stats updates
- */
-class TestObserver extends Observer:
-  val seen = ListBuffer[WordStats]()
-  def update(stats: WordStats): Unit = seen += stats
-end TestObserver
+    val freqs = observer.lastUpdate.get.topWords.toMap
+    assert(freqs("apple") == 3)
+    assert(freqs("banana") == 1)
+
+  test("sorts by frequency descending"):
+    val observer = new TestObserver
+    val engine = new TopWordsEngine(
+      howMany = 10,
+      minLength = 1,
+      windowSize = 6,
+      observer = observer
+    )
+
+    List("alpha", "beta", "alpha", "gamma", "alpha", "beta").foreach(engine.process)
+
+    val topWords = observer.lastUpdate.get.topWords
+    assert(topWords(0) == ("alpha", 3))
+    assert(topWords(1) == ("beta", 2))
+
+  test("limits results to howMany top words"):
+    val observer = new TestObserver
+    val engine = new TopWordsEngine(
+      howMany = 2,
+      minLength = 1,
+      windowSize = 5,
+      observer = observer
+    )
+
+    List("word1", "word2", "word3", "word4", "word5").foreach(engine.process)
+
+    assert(observer.lastUpdate.get.topWords.size == 2)
+
+  test("only notifies observer when window is full"):
+    val observer = new TestObserver
+    val engine = new TopWordsEngine(
+      howMany = 5,
+      minLength = 1,
+      windowSize = 4,
+      observer = observer
+    )
+
+    engine.process("one")
+    assert(observer.updateCount == 0)
+
+    engine.process("two")
+    assert(observer.updateCount == 0)
+
+    engine.process("three")
+    assert(observer.updateCount == 0)
+
+    engine.process("four")
+    assert(observer.updateCount == 1)
+
+end TopWordsEngineTest

@@ -1,8 +1,7 @@
 package edu.luc.cs.cs371.echo
 
 import com.typesafe.scalalogging.Logger
-import edu.luc.cs.cs371.echo.main.ConsoleObserver
-import edu.luc.cs.cs371.echo.main.TopWordsEngine
+import main.{ConsoleObserver, TopWordsEngine}
 
 object Main:
 

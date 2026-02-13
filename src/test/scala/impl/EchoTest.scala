@@ -1,4 +1,6 @@
-package edu.luc.cs.cs371.echo.impl
+package impl
+import main._
+import impl._
 
 import org.scalatest.funsuite.AnyFunSuite
 
