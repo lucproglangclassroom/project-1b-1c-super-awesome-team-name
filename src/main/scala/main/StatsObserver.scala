@@ -1,4 +1,4 @@
-package main
+package edu.luc.cs.cs371.echo.main
 
 /**
  * Represents statistics about the top words in a sliding window.

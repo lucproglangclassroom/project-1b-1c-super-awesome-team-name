@@ -1,4 +1,4 @@
-package main
+package edu.luc.cs.cs371.echo.main
 
 /**
  * A concrete implementation of StatsObserver that prints word statistics
