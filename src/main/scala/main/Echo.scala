@@ -1,4 +1,4 @@
-package edu.luc.cs.cs371.echo.main
+package main
 
 trait Echo:
   def echo(msg: String): String

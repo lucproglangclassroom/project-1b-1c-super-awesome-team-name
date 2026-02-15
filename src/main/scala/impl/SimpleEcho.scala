@@ -1,4 +1,4 @@
-package edu.luc.cs.cs371.echo
+
 package impl
 
 import main.Echo
