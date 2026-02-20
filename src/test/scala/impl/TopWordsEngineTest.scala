@@ -1,6 +1,6 @@
 package impl
 
-import main._
+import edu.luc.cs.cs371.echo.main._
 import org.scalatest.funsuite.AnyFunSuite
 
 class TopWordsEngineTest extends AnyFunSuite:
@@ -128,6 +128,15 @@ class TopWordsEngineTest extends AnyFunSuite:
     engine.process("four")
     assert(observer.updateCount == 1)
 
+  test("ConsoleObserver formats output correctly"):
+    val observer = new ConsoleObserver
+    val stats = WordStats(List(("hello", 3), ("world", 2)))
+
+    val output = new java.io.ByteArrayOutputStream()
+    Console.withOut(output):
+      observer.update(stats)
+
+    assert(output.toString.trim == "hello: 3 world: 2")
 end TopWordsEngineTest
 
 //tests passed as of 2/13/26 4:53 pm 
