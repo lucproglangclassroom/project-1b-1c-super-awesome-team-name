@@ -154,3 +154,9 @@ Step 4 — Refactor into Traits
 Step 5 — Add tests
 Step 6 — Profile
 Step 7 — Document LLM interactions
+
+Why They Say “You No Longer Need Observer”
+Because:
+scanLeft(initialState)(update)
+Already gives you: Previous state, Current input, New state
+That is the observer pattern — but functional.
