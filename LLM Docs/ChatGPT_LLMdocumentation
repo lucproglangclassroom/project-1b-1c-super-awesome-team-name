@@ -1,0 +1,162 @@
+Project 1b:
+We used chatGPT to help us breakdown this project into phases to make it easier for us to divide up the work. 
+
+The LLM gave use these phases to work with: 
+
+Phase 1 — Understand the problem (in plain English)
+Phase 2 — Core algorithm (no Scala yet)
+Phase 3 — Architectural design
+Phase 4 — Define your domain model
+Phase 5 — The computational core
+Phase 6 — Word stream (pipe)
+Phase 7 — Production observer (console)
+Phase 8 — Test observer
+Phase 9 — Command line arguments (mainargs)
+
+Project 1c:
+We used chatGPT to breakdown each concept and how we can implement them. The LLM gave use these key takeaways: 
+
+Learning Objectives: 
+
+Rewriting our project in a purely functional style means: 
+No var
+No mutable collections
+No side-effect-driven architecture
+No Observer pattern anymore
+Functional stream-style processing instead
+
+| Imperative (Java style) | Functional (Scala style)    |
+| ----------------------- | --------------------------- |
+| Uses `var`              | Uses `val` only             |
+| Mutates state           | Creates new values          |
+| Loops                   | Uses higher-order functions |
+| Observer pattern        | Uses function composition   |
+| Push-based events       | Stream/pipeline model       |
+
+Higher-Order Functions:
+
+A higher-order function Takes a function as a parameter, OR Returns a function
+Examples:
+map
+filter
+foldLeft
+scanLeft ← your hint
+They want you to use these instead of loops and mutation.
+
+Immutable Data Structures:
+Instead of:
+var total = 0
+You do:
+val totals = numbers.scanLeft(0)(_ + _)
+Each step produces a new value instead of changing old ones.
+
+Streams / Pipes-and-Filters Model:
+Instead of:
+Input → Observer → Update → Print
+You now do:
+Input Iterator
+  → map
+  → filter
+  → scanLeft
+  → foreach(print)
+Each stage transforms data.
+That’s the pipes-and-filters architecture.
+
+Time/Space Complexity with Immutability:
+
+Functional programming can:
+Create many intermediate values
+Use recursion
+Allocate more memory
+
+You must:
+Demonstrate scalability
+Include a profiler screenshot
+Show your design doesn’t blow up in memory/time
+
+Modularity / Separation of Concerns:
+Use traits to separate:
+Parsing
+Business logic
+IO
+Processing
+
+Example structure:
+trait Parser
+trait Processor
+trait Renderer
+
+Implementation: 
+1. Rewrite Project 1b in Scala 3 with new requirements
+2. Use Traits for Modularity
+They expect something like:
+
+trait InputHandler:
+  def read(): Iterator[String]
+trait Processor:
+  def process(input: Iterator[String]): Iterator[String]
+
+3. Handle SIGPIPE. SIGPIPE happens when:
+Your program writes to a pipe
+The reader closes early
+Example:
+yourprogram | head
+When head stops reading, your program must not crash.
+
+4. Use Iterator.scanLeft
+This replaces the Observer pattern.
+Instead of: Observing state changes
+You: Accumulate state across a stream
+Example:
+input.scanLeft(initialState)(updateFunction)
+This returns every intermediate state.
+
+5. Test Interactive Behavior
+This is important.
+Your program must:
+Respond immediately to input
+Not buffer everything first
+They will test something like:
+echo hello | yourprogram
+And expect immediate output.
+
+6. sbt Project Structure
+Use standard layout:
+src/
+  main/scala/
+  test/scala/
+
+7. Automated Test Suite
+You must:
+Use ScalaTest or similar
+Have good coverage
+Test interactive behavior
+
+8. Scalability + Profiler Screenshot
+Run with large input.
+Use:JVM profiler,VisualVM, async-profiler
+Include screenshot.
+
+Mental Model Shift:
+Instead of: "How do I update the program state?" Think:"How do I transform a stream of values?"
+
+Suggested Development Plan:
+Step 1 — Skeleton in Scala 3
+Convert structure only.
+Step 2 — Remove all var
+Replace with:
+val
+map
+foldLeft
+scanLeft
+Step 3 — Replace Observer with scanLeft
+Step 4 — Refactor into Traits
+Step 5 — Add tests
+Step 6 — Profile
+Step 7 — Document LLM interactions
+
+Why They Say “You No Longer Need Observer”
+Because:
+scanLeft(initialState)(update)
+Already gives you: Previous state, Current input, New state
+That is the observer pattern — but functional.
