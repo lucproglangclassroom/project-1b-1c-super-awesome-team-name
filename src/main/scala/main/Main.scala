@@ -1,9 +1,7 @@
 package edu.luc.cs.cs371.echo.main
 
-
 import com.typesafe.scalalogging.Logger
-import edu.luc.cs.cs371.echo.main.ConsoleObserver
-import edu.luc.cs.cs371.echo.main.TopWordsEngine
+import impl.{ConsoleRenderer, FileInputHandler, StdinInputHandler}
 import mainargs._
 
 object Main:
@@ -35,73 +33,36 @@ object Main:
     logger.debug(
       s"howMany=$cloudSize minLength=$lengthAtLeast windowSize=$windowSize"
     )
+    
     val initial = WindowState(
-        window = Vector.empty,
-        freq = Map.empty,
-        windowSize = windowSize,
-        minLength = lengthAtLeast,
-        howMany = cloudSize
+      window = Vector.empty,
+      freq = Map.empty,
+      windowSize = windowSize,
+      minLength = lengthAtLeast,
+      howMany = cloudSize
     )
 
-    val processor = ScanLeftProcessor()
-/* FIX THIS
-    val words = Unit
+    val processor = new ScanLeftProcessor()
+    val renderer = new ConsoleRenderer()
+    
+    val inputHandler: InputHandler =
       if inputFile.nonEmpty then
-        scala.io.Source.fromFile(inputFile).getLines().flatMap(_.split("\\W+")).map(_.toLowerCase)
+        new FileInputHandler(inputFile)
       else
-        scala.io.Source.stdin.getLines().flatMap(_.split("(?U)[^\\p{Alpha}0-9']+").nn).map(_.toLowerCase.nn)
+        new StdinInputHandler()
 
+    val words = inputHandler.readWords()
 
-      try
-        processor.process(words, initial).foreach { state =>
-          if state.window.nonEmpty then
-            println(state.display)
-            if scala.sys.process.stdout.checkError() then
-              sys.exit(1)
-        }
-      catch
-        case _: java.io.IOException => sys.exit(0)*/
-  /*
-      // Create an observer that prints word cloud updates
-      val observer = new ConsoleObserver
+    try
+      processor.process(words, initial).foreach { state =>
+        if !renderer.render(state) then
+          // SIGPIPE or other output error detected
+          sys.exit(1)
+      }
+    catch
+      case _: java.io.IOException =>
+        // Handle EOF gracefully
+        sys.exit(0)
 
-      // Create the TopWordsEngine
-      val engine = new TopWordsEngine(
-        howMany = cloudSize,
-        minLength = lengthAtLeast,
-        windowSize = windowSize,
-        observer = observer
-      )
-
-
-      if inputFile.nonEmpty then
-        val source = scala.io.Source.fromFile(inputFile)
-        var wordCount = 0 // ← Add counter
-        try
-          source.getLines().flatMap(_.split("\\W+"))
-            .foreach { word =>
-              engine.process(word.toLowerCase)
-              wordCount += 1
-            }
-        finally
-          source.close()
-
-        println(s"\n=== FINAL SUMMARY ===")
-        println(s"Total words processed: $wordCount")
-        println(s"Window size: $windowSize")
-        println(s"Min length: $lengthAtLeast")
-      else
-      // Read words from stdin
-        val words = scala.io.Source.stdin.getLines()
-          .flatMap(_.split("(?U)[^\\p{Alpha}0-9']+").nn)
-
-      // Process each word
-        try
-          for word <- words do engine.process(word)
-        catch
-          case _: java.io.IOException =>
-          // Handle EOF gracefully
-            sys.exit(0)
-  */
-
-  def main(args: Array[String]): Unit = ParserForMethods(this).runOrExit(args.toSeq) : Unit
+  def main(args: Array[String]): Unit = 
+    ParserForMethods(this).runOrExit(args.toSeq)

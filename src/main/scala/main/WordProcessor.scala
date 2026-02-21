@@ -5,4 +5,4 @@ trait WordProcessor:
 
 class ScanLeftProcessor extends WordProcessor:
   def process(words: Iterator[String], initial: WindowState): Iterator[WindowState] =
-    words.scanLeft(initial)(_.process(_)).drop(1)
+    words.scanLeft(initial)((state, word) => state.process(word)).drop(1)
