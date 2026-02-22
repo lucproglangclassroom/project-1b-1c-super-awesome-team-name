@@ -8,12 +8,13 @@ import edu.luc.cs.cs371.echo.main.{OutputRenderer, WindowState}
 class ConsoleRenderer extends OutputRenderer:
   def render(state: WindowState): Boolean =
     if state.window.size >= state.windowSize then
-      println(state.display)
-      // Check for SIGPIPE or other output errors
-      if scala.sys.process.stdout.checkError() then
-        false
-      else
-        true
+      try
+        Console.println(state.display)
+        // Check for SIGPIPE or other output errors
+        !Console.out.checkError()
+      catch
+        case _: java.io.IOException =>
+          false
     else
       true
 end ConsoleRenderer
