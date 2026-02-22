@@ -160,3 +160,5 @@ Because:
 scanLeft(initialState)(update)
 Already gives you: Previous state, Current input, New state
 That is the observer pattern — but functional.
+
+PROJECT 1B AND 1C COMPLETE!
