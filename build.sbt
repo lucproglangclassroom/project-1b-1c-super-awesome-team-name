@@ -9,5 +9,8 @@ libraryDependencies ++= Seq(
   "org.scalacheck"    %% "scalacheck"      % "1.19.0"   % Test,
   "org.scalatestplus" %% "scalacheck-1-18" % "3.2.19.0" % Test
 )
+libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.3"
+coverageExcludedFiles := ".*Main;.*Interactive"
 
 enablePlugins(JavaAppPackaging)

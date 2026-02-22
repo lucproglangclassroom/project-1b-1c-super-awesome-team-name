@@ -1,7 +1,6 @@
-package edu.luc.cs.cs371.echo
-package main
+package edu.luc.cs.cs371.echo.main
 
-import edu.luc.cs.cs371.echo.impl.{DoubleEcho, SimpleEcho}
+import impl.{DoubleEcho, SimpleEcho}
 import mainargs.{Flag, ParserForMethods, arg, main}
 
 import java.io.{FileInputStream, FileNotFoundException}
